@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
-from gaussian_splatting.gaussian_model import GaussianModel
+from gaussian_splatting import GaussianModel
 
 class FeaturedGaussian(GaussianModel):
     def __init__(self, sh_degree):
-        super(FeaturedGaussian, self).__init__(self, sh_degree)
+        super().__init__(self, sh_degree)
         self._semantic_features = torch.empty(0)
 
     def capture(self):
@@ -43,6 +43,7 @@ class FeaturedGaussian(GaussianModel):
             semantic_feature_size = int(semantic_feature_size/4)
         self._semantic_features = torch.zeros(self._xyz.shape[0], semantic_feature_size, 1).float().cuda() 
         self._semantic_features = nn.Parameter(self._semantic_features.transpose(1, 2).contiguous().requires_grad_(True))
+        return self
 
     def update_points_add(self,
             xyz: nn.Parameter,
