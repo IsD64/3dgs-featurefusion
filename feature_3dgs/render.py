@@ -3,7 +3,7 @@ from typing import Tuple
 from tqdm import tqdm
 import tifffile
 import torch, torchvision
-from gaussian_model import FeaturedGaussian
+from gaussian_model import FeatureGaussian
 from gaussian_splatting.dataset import CameraDataset
 from gaussian_splatting.utils import psnr, ssim, unproject
 from prepare import prepare_dataset, prepare_gaussians
@@ -12,7 +12,7 @@ from prepare import prepare_dataset, prepare_gaussians
 def prepare_rendering(
         sh_degree: int, source: str, device: str,
         trainable_camera: bool = False, load_ply: str = None, load_camera: str = None,
-        load_mask=True, load_depth=True) -> Tuple[CameraDataset, FeaturedGaussian]:
+        load_mask=True, load_depth=True) -> Tuple[CameraDataset, FeatureGaussian]:
     dataset = prepare_dataset(source=source, device=device, trainable_camera=trainable_camera, load_camera=load_camera, load_mask=load_mask, load_depth=load_depth)
     gaussians = prepare_gaussians(sh_degree=sh_degree, source=source, device=device, trainable_camera=trainable_camera, load_ply=load_ply)
     return dataset, gaussians
@@ -44,9 +44,9 @@ def build_pcd_rescale(
     pcd_gt = build_pcd(color_gt, invdepth_gt_rescale, mask, FoVx, FoVy)
     return pcd, pcd_gt, invdepth_gt_rescale
 
-# TODO
+# TODO check gaussian_splatting.render.py
 def rendering(
-        dataset: CameraDataset, gaussians: FeaturedGaussian, save: str, save_pcd: bool = False,
+        dataset: CameraDataset, gaussians: FeatureGaussian, save: str, save_pcd: bool = False,
         rescale_depth_gt: bool = True) -> None:
     os.makedirs(save, exist_ok=True)
     dataset.save_cameras(os.path.join(save, "cameras.json"))

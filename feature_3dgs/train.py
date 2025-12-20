@@ -5,7 +5,7 @@ from typing import List, Tuple
 import torch
 from tqdm import tqdm
 from argparse import Namespace
-from gaussian_model import FeaturedGaussian
+from gaussian_model import FeatureGaussian
 from trainer.base import FeatureTrainer
 from prepare import basemodes, shliftmodes, prepare_dataset, prepare_gaussians, prepare_trainer
 from gaussian_splatting.dataset import CameraDataset
@@ -16,7 +16,8 @@ def prepare_training(
         sh_degree: int, source: str, device: str, mode: str,
         trainable_camera: bool = False, load_ply: str = None, load_camera: str = None,
         load_mask=True, load_depth=True,
-        with_scale_reg=False, configs={}) -> Tuple[CameraDataset, FeaturedGaussian, FeatureTrainer]:
+        with_scale_reg=False, configs={}
+) -> Tuple[CameraDataset, FeatureGaussian, FeatureTrainer]:
     dataset = prepare_dataset(source=source, device=device, trainable_camera=trainable_camera, load_camera=load_camera, load_mask=load_mask, load_depth=load_depth)
     gaussians = prepare_gaussians(sh_degree=sh_degree, source=source, device=device, trainable_camera=trainable_camera, load_ply=load_ply)
     trainer = prepare_trainer(gaussians=gaussians, dataset=dataset, mode=mode, trainable_camera=trainable_camera, load_ply=load_ply, with_scale_reg=with_scale_reg, configs=configs)
@@ -29,9 +30,17 @@ def save_cfg_args(destination: str, sh_degree: int, source: str):
     with open(os.path.join(destination, "cfg_args"), 'w') as cfg_log_f:
         cfg_log_f.write(str(Namespace(sh_degree=sh_degree, source_path=source)))
 
-
 # TODO
-def training(dataset: CameraDataset, gaussians: FeaturedGaussian, trainer: FeatureTrainer, destination: str, iteration: int, save_iterations: List[int], device: str, empty_cache_every_step=False):
+def training(
+        dataset: CameraDataset,
+        gaussians: FeatureGaussian,
+        trainer: FeatureTrainer,
+        destination: str,
+        iteration: int,
+        save_iterations: List[int],
+        device: str,
+        empty_cache_every_step=False
+):
     shutil.rmtree(os.path.join(destination, "point_cloud"), ignore_errors=True)  # remove the previous point cloud
     pbar = tqdm(range(1, iteration+1), dynamic_ncols=True, desc="Training")
     epoch = list(range(len(dataset)))
@@ -62,7 +71,11 @@ def training(dataset: CameraDataset, gaussians: FeaturedGaussian, trainer: Featu
                 epoch_maskpsnr = torch.concat([epoch_maskpsnr, psnr(rendered_maskimage, ground_truth_maskimage)], dim=1)
             ema_loss_for_log = 0.4 * loss.item() + 0.6 * ema_loss_for_log
             if step % 10 == 0:
-                postfix = {'epoch': step // len(dataset), 'loss': ema_loss_for_log, 'psnr': avg_psnr_for_log, 'masked psnr': avg_maskpsnr_for_log, 'n': gaussians._xyz.shape[0]}
+                postfix = {'epoch': step // len(dataset),
+                           'loss': ema_loss_for_log,
+                           'psnr': avg_psnr_for_log,
+                           'masked psnr': avg_maskpsnr_for_log,
+                           'n': gaussians._xyz.shape[0]}
                 if avg_maskpsnr_for_log <= 0:
                     del postfix['masked psnr']
                 pbar.set_postfix(postfix)

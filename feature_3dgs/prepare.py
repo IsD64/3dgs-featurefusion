@@ -5,21 +5,64 @@ from typing import List, Tuple
 import torch
 from tqdm import tqdm
 from argparse import Namespace
-from gaussian_splatting import GaussianModel
+from gaussian_model import FeatureGaussian
+from trainer.base import FeatureTrainer
 from gaussian_splatting.dataset import CameraDataset
 from gaussian_splatting.utils import psnr
 from gaussian_splatting.trainer import AbstractTrainer
-from gaussian_splatting.prepare import basemodes, shliftmodes, prepare_dataset, prepare_gaussians, prepare_trainer
+from gaussian_splatting.prepare import basemodes, shliftmodes, prepare_dataset,colmap_init
+from gaussian_splatting.trainer.extensions import ScaleRegularizeTrainerWrapper
+
+def prepare_feature_gaussians(
+        sh_degree: int,
+        source: str,
+        device: str,
+        trainable_camera: bool = False,
+        load_ply: str = None
+) -> FeatureGaussian:
+    assert trainable_camera == False, "Camera trainable not implemented!"
+    gaussians = FeatureGaussian(sh_degree).to(device)
+    gaussians.load_ply(load_ply) if load_ply else colmap_init(gaussians, source)
+    return gaussians
+
+def prepare_feature_trainer(
+        gaussians: FeatureGaussian,
+        dataset: CameraDataset,
+        mode: str,
+        trainable_camera: bool = False,
+        load_ply: str = None,
+        with_scale_reg=False,
+        configs={}
+) -> FeatureTrainer:
+    assert trainable_camera == False, "Camera trainable not implemented!"
+    modes = shliftmodes if load_ply else basemodes
+    constructor = modes[mode]
+    if with_scale_reg:
+        constructor = lambda *args, **kwargs: ScaleRegularizeTrainerWrapper(modes[mode], *args, **kwargs)
+    if trainable_camera:
+        trainer = constructor(
+            gaussians,
+            scene_extent=dataset.scene_extent(),
+            dataset=dataset,
+            **configs
+        )
+    else:
+        trainer = constructor(
+            gaussians,
+            scene_extent=dataset.scene_extent(),
+            **configs
+        )
+    return trainer
 
 # TODO
-def prepare_training(
+def prepare_feature_training(
         sh_degree: int, source: str, device: str, mode: str,
         trainable_camera: bool = False, load_ply: str = None, load_camera: str = None,
         load_mask=True, load_depth=True,
-        with_scale_reg=False, configs={}) -> Tuple[CameraDataset, GaussianModel, AbstractTrainer]:
+        with_scale_reg=False, configs={}) -> Tuple[CameraDataset, FeatureGaussian, AbstractTrainer]:
     dataset = prepare_dataset(source=source, device=device, trainable_camera=trainable_camera, load_camera=load_camera, load_mask=load_mask, load_depth=load_depth)
-    gaussians = prepare_gaussians(sh_degree=sh_degree, source=source, device=device, trainable_camera=trainable_camera, load_ply=load_ply)
-    trainer = prepare_trainer(gaussians=gaussians, dataset=dataset, mode=mode, trainable_camera=trainable_camera, load_ply=load_ply, with_scale_reg=with_scale_reg, configs=configs)
+    gaussians = prepare_feature_gaussians(sh_degree=sh_degree, source=source, device=device, load_ply=load_ply)
+    trainer = prepare_feature_trainer(gaussians=gaussians, dataset=dataset, mode=mode, trainable_camera=trainable_camera, load_ply=load_ply, with_scale_reg=with_scale_reg, configs=configs)
     return dataset, gaussians, trainer
 
 
@@ -31,9 +74,18 @@ def save_cfg_args(destination: str, sh_degree: int, source: str):
 
 
 # TODO
-def training(dataset: CameraDataset, gaussians: GaussianModel, trainer: AbstractTrainer, destination: str, iteration: int, save_iterations: List[int], device: str, empty_cache_every_step=False):
+def training(
+        dataset: CameraDataset,
+        gaussians: FeatureGaussian,
+        trainer: FeatureTrainer,
+        destination: str,
+        iteration: int,
+        save_iterations: List[int],
+        device: str,
+        empty_cache_every_step=False
+):
     shutil.rmtree(os.path.join(destination, "point_cloud"), ignore_errors=True)  # remove the previous point cloud
-    pbar = tqdm(range(1, iteration+1), dynamic_ncols=True, desc="Training")
+    pbar = tqdm(range(1, iteration + 1), dynamic_ncols=True, desc="Training")
     epoch = list(range(len(dataset)))
     epoch_psnr = torch.empty(3, 0, device=device)
     epoch_maskpsnr = torch.empty(3, 0, device=device)

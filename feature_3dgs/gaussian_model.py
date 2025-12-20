@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from gaussian_splatting import GaussianModel
 
-class FeaturedGaussian(GaussianModel):
+class FeatureGaussian(GaussianModel):
     def __init__(self, sh_degree):
         super().__init__(self, sh_degree)
         self._semantic_features = torch.empty(0)
