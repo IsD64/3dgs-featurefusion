@@ -31,6 +31,7 @@ class FeatureGaussian(GaussianModel):
 
     def rewrite_semantic_feature(self, x):
         self._semantic_features = x
+        
     def forward(self, viewpoint_camera: Camera):
         # Create zero tensor. We will use it to make pytorch return gradients of the 2D (screen-space) means
         screenspace_points = torch.zeros_like(self.get_xyz, dtype=self.get_xyz.dtype, requires_grad=True, device=self._xyz.device) + 0

@@ -1,8 +1,8 @@
 from gaussian_splatting.prepare import basemodes, shliftmodes, colmap_init, prepare_trainer
 from gaussian_splatting.trainer.extensions import ScaleRegularizeTrainerWrapper
 from gaussian_splatting.dataset import CameraDataset
-from gaussian_model import FeatureGaussian
-from trainer.base import FeatureTrainer
+from feature_3dgs import FeatureGaussian
+from feature_3dgs.trainer import FeatureTrainer
 
 
 def prepare_feature_gaussians(

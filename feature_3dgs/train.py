@@ -7,10 +7,9 @@ from tqdm import tqdm
 from argparse import Namespace
 from gaussian_splatting.train import training
 from gaussian_splatting.utils import psnr
-from gaussian_model import FeatureGaussian
-from trainer.base import FeatureTrainer
-from dataset.dataset import FeatureDataset
-from prepare import basemodes, shliftmodes, prepare_feature_dataset, prepare_feature_gaussians, prepare_feature_trainer 
+from feature_3dgs import FeatureGaussian
+from feature_3dgs.trainer import FeatureTrainer
+from feature_3dgs.prepare import basemodes, shliftmodes, prepare_feature_dataset, prepare_feature_gaussians, prepare_feature_trainer 
 
 def prepare_training(
         sh_degree: int, source: str, device: str, mode: str,

@@ -5,9 +5,8 @@ import tifffile
 import torch, torchvision
 from gaussian_splatting.utils import psnr, ssim, unproject
 from gaussian_splatting.utils.lpipsPyTorch import lpips
-from prepare import prepare_feature_dataset, prepare_feature_gaussians
-from gaussian_model import FeatureGaussian
-from dataset.dataset import FeatureDataset
+from feature_3dgs.prepare import prepare_feature_dataset, prepare_feature_gaussians
+from feature_3dgs import FeatureGaussian
 
 # TODO
 def prepare_rendering(

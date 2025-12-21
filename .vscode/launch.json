@@ -1,0 +1,41 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "train",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "feature_3dgs.train",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "-s",
+                "data/truck",
+                "-d",
+                "output/truck",
+                "-i",
+                "30000",
+                "--mode",
+                "densify",
+                "--empty_cache_every_step",
+                "-odensify_grad_threshold=0.0001",
+            ]
+        },
+        {
+            "name": "render",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "feature_3dgs.render",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "-s",
+                "data/truck",
+                "-d",
+                "output/truck",
+                "-i",
+                "30000",
+            ]
+        },
+    ]
+}
