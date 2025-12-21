@@ -11,20 +11,30 @@ from prepare import prepare_feature_dataset, prepare_feature_gaussians
 
 # TODO
 def prepare_rendering(
-        sh_degree: int, source: str, device: str,
-        trainable_camera: bool = False, load_ply: str = None, load_camera: str = None,
-        load_mask=True, load_depth=True) -> Tuple[CameraDataset, FeatureGaussian]:
-    dataset = prepare_feature_dataset(source=source,
-                                      device=device,
-                                      trainable_camera=trainable_camera,
-                                      load_camera=load_camera,
-                                      load_mask=load_mask,
-                                      load_depth=load_depth)
-    gaussians = prepare_feature_gaussians(sh_degree=sh_degree,
-                                          source=source,
-                                          device=device,
-                                          trainable_camera=trainable_camera,
-                                          load_ply=load_ply)
+        sh_degree: int,
+        source: str,
+        device: str,
+        trainable_camera: bool = False,
+        load_ply: str = None,
+        load_camera: str = None,
+        load_mask=True,
+        load_depth=True
+) -> Tuple[CameraDataset, FeatureGaussian]:
+    dataset = prepare_feature_dataset(
+                source=source,
+                device=device,
+                trainable_camera=trainable_camera,
+                load_camera=load_camera,
+                load_mask=load_mask,
+                load_depth=load_depth
+              )
+    gaussians = prepare_feature_gaussians(
+                    sh_degree=sh_degree,
+                    source=source,
+                    device=device,
+                    trainable_camera=trainable_camera,
+                    load_ply=load_ply
+                )
     return dataset, gaussians
 
 # TODO
@@ -57,8 +67,12 @@ def build_pcd_rescale(
 
 # TODO check gaussian_splatting.render.py
 def rendering(
-        dataset: CameraDataset, gaussians: FeatureGaussian, save: str, save_pcd: bool = False,
-        rescale_depth_gt: bool = True) -> None:
+        dataset: CameraDataset,
+        gaussians: FeatureGaussian,
+        save: str,
+        save_pcd: bool = False,
+        rescale_depth_gt: bool = True
+) -> None:
     os.makedirs(save, exist_ok=True)
     dataset.save_cameras(os.path.join(save, "cameras.json"))
     render_path = os.path.join(save, "renders")
