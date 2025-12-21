@@ -1,0 +1,4 @@
+[submodule "submodules/diff-gaussian-rasterization"]
+	path = submodules/diff-gaussian-rasterization
+	url = https://github.com/IsD64/diff-gaussian-rasterization.git
+	branch = featuregs
