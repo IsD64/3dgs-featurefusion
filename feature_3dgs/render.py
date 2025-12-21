@@ -3,11 +3,11 @@ from typing import Tuple
 from tqdm import tqdm
 import tifffile
 import torch, torchvision
-from gaussian_model import FeatureGaussian
-from gaussian_splatting.dataset import CameraDataset
 from gaussian_splatting.utils import psnr, ssim, unproject
 from gaussian_splatting.utils.lpipsPyTorch import lpips
 from prepare import prepare_feature_dataset, prepare_feature_gaussians
+from gaussian_model import FeatureGaussian
+from dataset.dataset import FeatureDataset
 
 # TODO
 def prepare_rendering(
@@ -19,7 +19,7 @@ def prepare_rendering(
         load_camera: str = None,
         load_mask=True,
         load_depth=True
-) -> Tuple[CameraDataset, FeatureGaussian]:
+) -> Tuple[FeatureDataset, FeatureGaussian]:
     dataset = prepare_feature_dataset(
                 source=source,
                 device=device,
@@ -67,7 +67,7 @@ def build_pcd_rescale(
 
 # TODO check gaussian_splatting.render.py
 def rendering(
-        dataset: CameraDataset,
+        dataset: FeatureDataset,
         gaussians: FeatureGaussian,
         save: str,
         save_pcd: bool = False,
