@@ -7,20 +7,19 @@ from gaussian_model import FeatureGaussian
 from gaussian_splatting.dataset import CameraDataset
 from gaussian_splatting.utils import psnr, ssim, unproject
 from gaussian_splatting.utils.lpipsPyTorch import lpips
-from gaussian_splatting.prepare import prepare_dataset
-from prepare import prepare_feature_gaussians
+from prepare import prepare_feature_dataset, prepare_feature_gaussians
 
 # TODO
 def prepare_rendering(
         sh_degree: int, source: str, device: str,
         trainable_camera: bool = False, load_ply: str = None, load_camera: str = None,
         load_mask=True, load_depth=True) -> Tuple[CameraDataset, FeatureGaussian]:
-    dataset = prepare_dataset(source=source,
-                              device=device,
-                              trainable_camera=trainable_camera,
-                              load_camera=load_camera,
-                              load_mask=load_mask,
-                              load_depth=load_depth)
+    dataset = prepare_feature_dataset(source=source,
+                                      device=device,
+                                      trainable_camera=trainable_camera,
+                                      load_camera=load_camera,
+                                      load_mask=load_mask,
+                                      load_depth=load_depth)
     gaussians = prepare_feature_gaussians(sh_degree=sh_degree,
                                           source=source,
                                           device=device,

@@ -1,10 +1,3 @@
-import os
-import random
-import shutil
-from typing import List, Tuple
-import torch
-from tqdm import tqdm
-from argparse import Namespace
 from gaussian_splatting.prepare import basemodes, shliftmodes, colmap_init
 from gaussian_splatting.trainer.extensions import ScaleRegularizeTrainerWrapper
 from gaussian_model import FeatureGaussian
