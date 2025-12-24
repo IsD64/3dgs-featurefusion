@@ -3,11 +3,13 @@ import torch.nn as nn
 import math
 from gaussian_splatting import GaussianModel, Camera
 from feature_3dgs.diff_gaussian_rasterization import GaussianRasterizationSettings, GaussianRasterizer
+from feature_3dgs.decoder import AbstractDecoder
 
 class FeatureGaussian(GaussianModel):
-    def __init__(self, sh_degree):
+    def __init__(self, sh_degree, decoder: AbstractDecoder):
         super().__init__(self, sh_degree)
         self._semantic_features = torch.empty(0)
+        self._decoder = decoder
 
     def capture(self):
         return(
@@ -25,6 +27,10 @@ class FeatureGaussian(GaussianModel):
             self.spatial_lr_scale,
             self._semantic_features,
         )
+
+    @property
+    def get_decoder(self):
+        return self._decoder
 
     @property
     def get_semantic_features(self):

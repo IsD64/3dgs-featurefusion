@@ -3,7 +3,7 @@ from gaussian_splatting.trainer.extensions import ScaleRegularizeTrainerWrapper
 from gaussian_splatting.dataset import CameraDataset
 from feature_3dgs import FeatureGaussian
 from feature_3dgs.trainer import FeatureTrainer
-
+from feature_3dgs.extractor import AbstractFeatureExtractor
 
 def prepare_feature_gaussians(
         sh_degree: int,
@@ -20,10 +20,11 @@ def prepare_feature_gaussians(
 # TODO
 def prepare_feature_trainer(
         gaussians: FeatureGaussian,
-        decoder: nn.Module,
-        *args, **kwargs) -> FeatureTrainer:
+        extractor: AbstractFeatureExtractor,
+        *args, **kwargs
+) -> FeatureTrainer:
     trainer = prepare_trainer(gaussians=gaussians, *args, **kwargs)
-    feature_trainer = FeatureTrainer(base_trainer=trainer, decoder=decoder)
+    feature_trainer = FeatureTrainer(base_trainer=trainer, extractor=extractor)
     return feature_trainer
 
 # TODO
