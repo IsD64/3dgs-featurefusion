@@ -20,7 +20,7 @@ def prepare_training(
 ) -> Tuple[CameraDataset, FeatureGaussian, FeatureTrainer]:
     dataset = prepare_feature_dataset(source=source, device=device, trainable_camera=trainable_camera, load_camera=load_camera, load_mask=load_mask, load_depth=load_depth)
     gaussians = prepare_feature_gaussians(sh_degree=sh_degree, source=source, device=device, trainable_camera=trainable_camera, load_ply=load_ply)
-    decoder = prepare_feature_extractor()
+    decoder = prepare_feature_extractor(mode="base", path = "None")
     trainer = prepare_feature_trainer(gaussians=gaussians, decoder=decoder, dataset=dataset, mode=mode, trainable_camera=trainable_camera, load_ply=load_ply, with_scale_reg=with_scale_reg, configs=configs)
     return dataset, gaussians, trainer
 
@@ -31,6 +31,50 @@ def save_cfg_args(destination: str, sh_degree: int, source: str):
     with open(os.path.join(destination, "cfg_args"), 'w') as cfg_log_f:
         cfg_log_f.write(str(Namespace(sh_degree=sh_degree, source_path=source)))
 
+def training(dataset: CameraDataset, gaussians: FeatureGaussian, trainer: FeatureTrainer, destination: str, iteration: int, save_iterations: List[int], device: str, empty_cache_every_step=False):
+    shutil.rmtree(os.path.join(destination, "point_cloud"), ignore_errors=True)  # remove the previous point cloud
+    pbar = tqdm(range(1, iteration+1), dynamic_ncols=True, desc="Training")
+    epoch = list(range(len(dataset)))
+    epoch_psnr = torch.empty(3, 0, device=device)
+    epoch_maskpsnr = torch.empty(3, 0, device=device)
+    ema_loss_for_log = 0.0
+    avg_psnr_for_log = 0.0
+    avg_maskpsnr_for_log = 0.0
+    for step in pbar:
+        epoch_idx = step % len(dataset)
+        if epoch_idx == 0:
+            avg_psnr_for_log = epoch_psnr.mean().item()
+            avg_maskpsnr_for_log = epoch_maskpsnr.mean().item()
+            epoch_psnr = torch.empty(3, 0, device=device)
+            epoch_maskpsnr = torch.empty(3, 0, device=device)
+            random.shuffle(epoch)
+        idx = epoch[epoch_idx]
+        loss, out = trainer.step(dataset[idx])
+        if empty_cache_every_step:
+            torch.cuda.empty_cache()
+        with torch.no_grad():
+            ground_truth_image = dataset[idx].ground_truth_image
+            rendered_image = out["render"]
+            epoch_psnr = torch.concat([epoch_psnr, psnr(rendered_image, ground_truth_image)], dim=1)
+            if dataset[idx].ground_truth_image_mask is not None:
+                ground_truth_maskimage = ground_truth_image * dataset[idx].ground_truth_image_mask
+                rendered_maskimage = rendered_image * dataset[idx].ground_truth_image_mask
+                epoch_maskpsnr = torch.concat([epoch_maskpsnr, psnr(rendered_maskimage, ground_truth_maskimage)], dim=1)
+            ema_loss_for_log = 0.4 * loss.item() + 0.6 * ema_loss_for_log
+            if step % 10 == 0:
+                postfix = {'epoch': step // len(dataset), 'loss': ema_loss_for_log, 'psnr': avg_psnr_for_log, 'masked psnr': avg_maskpsnr_for_log, 'n': gaussians._xyz.shape[0]}
+                if avg_maskpsnr_for_log <= 0:
+                    del postfix['masked psnr']
+                pbar.set_postfix(postfix)
+        if step in save_iterations:
+            save_path = os.path.join(destination, "point_cloud", "iteration_" + str(step))
+            os.makedirs(save_path, exist_ok=True)
+            gaussians.save_ply(os.path.join(save_path, "point_cloud.ply"))
+            dataset.save_cameras(os.path.join(destination, "cameras.json"))
+    save_path = os.path.join(destination, "point_cloud", "iteration_" + str(iteration))
+    os.makedirs(save_path, exist_ok=True)
+    gaussians.save_ply(os.path.join(save_path, "point_cloud.ply"))
+    dataset.save_cameras(os.path.join(destination, "cameras.json"))
 
 # TODO
 if __name__ == "__main__":

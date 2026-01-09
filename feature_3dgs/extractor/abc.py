@@ -6,7 +6,6 @@ from feature_3dgs import FeatureGaussian
 
 class AbstractFeatureExtractor(ABC):
 
-    @abstractmethod
     def extract(image: torch.Tensor) -> torch.Tensor:
         pass
 
@@ -19,6 +18,5 @@ class AbstractFeatureExtractor(ABC):
         pass
 
     @property
-    @abstractmethod
-    def paramters() -> torch.nn.parameter.Parameter:
+    def parameters() -> torch.nn.parameter.Parameter:
         pass

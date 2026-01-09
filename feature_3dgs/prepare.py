@@ -3,7 +3,11 @@ from gaussian_splatting.trainer.extensions import ScaleRegularizeTrainerWrapper
 from gaussian_splatting.dataset import CameraDataset
 from feature_3dgs import FeatureGaussian
 from feature_3dgs.trainer import FeatureTrainer
-from feature_3dgs.extractor import AbstractFeatureExtractor
+from feature_3dgs.extractor import AbstractFeatureExtractor, MLPExtractor
+
+extractormodes= {
+    "base": MLPExtractor
+}
 
 def prepare_feature_gaussians(
         sh_degree: int,
@@ -28,5 +32,9 @@ def prepare_feature_trainer(
     return feature_trainer
 
 # TODO
-def prepare_feature_extractor():
-    pass
+def prepare_feature_extractor(mode: str = "base", load_path: str | None = None) -> AbstractFeatureExtractor:
+    if mode not in extractormodes.keys():
+        raise NotImplementedError(f"{mode} is not an implemented extractor mode.")
+    extractor = extractormodes[mode]()
+    extractor.load(load_path)
+    return extractor

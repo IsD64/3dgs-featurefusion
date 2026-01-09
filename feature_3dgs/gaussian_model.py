@@ -75,7 +75,7 @@ class FeatureGaussian(GaussianModel):
         rotations = self.get_rotation
 
         shs = self.get_features
-    
+
         semantic_feature = self.get_semantic_feature
 
         # Rasterize visible Gaussians to image, obtain their radii (on screen).
@@ -84,7 +84,7 @@ class FeatureGaussian(GaussianModel):
             means2D=means2D,
             shs=shs,
             colors_precomp=None,
-            semantic_feature = semantic_feature, 
+            semantic_feature = semantic_feature,
             opacities=opacity,
             scales=scales,
             rotations=rotations,
