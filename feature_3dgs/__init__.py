@@ -1,1 +1,1 @@
-from .gaussian_model import FeatureGaussian
+from .gaussian_model import FeatureGaussianModel
