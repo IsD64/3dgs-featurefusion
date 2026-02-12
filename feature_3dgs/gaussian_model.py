@@ -123,11 +123,14 @@ class FeatureGaussianModel(GaussianModel):
         super().save_ply(path)
         semantic_features = self._semantic_features.detach()
         torch.save(semantic_features, path + '.semantic.pt')
+        self.get_decoder.save(path + '.decoder.pt') if self.get_decoder is not None else None
 
     def load_ply(self, path: str):
         super().load_ply(path)
         semantic_features = torch.load(path + '.semantic.pt').to(self._xyz.device)
         self._semantic_features = nn.Parameter(semantic_features.requires_grad_(True))
+        if self.get_decoder is not None:
+            self.get_decoder.load(path + '.decoder.pt')
 
     def update_points_add(
         self,
