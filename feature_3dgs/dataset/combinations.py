@@ -1,9 +1,11 @@
 from gaussian_splatting.dataset import CameraDataset
 from .yolo import available_datasets as available_yolo_datasets
+from .dinov3 import available_datasets as available_dinov3_datasets
 
 
 available_datasets = {
     **available_yolo_datasets,
+    **available_dinov3_datasets,
 }
 
 

@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from ultralytics import YOLO
 from gaussian_splatting.dataset import CameraDataset
-from feature_3dgs.dataset import AbstractFeatureExtractor, FeatureCameraDataset
+from feature_3dgs.dataset.abc import AbstractFeatureExtractor, FeatureCameraDataset
 
 
 class YOLOExtractor(AbstractFeatureExtractor):
