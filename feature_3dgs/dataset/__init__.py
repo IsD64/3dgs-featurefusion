@@ -1,1 +1,1 @@
-from .dataset import FeatureCamera, FeatureCameraDataset
+from .dataset import AbstractFeatureExtractor, FeatureCamera, FeatureCameraDataset

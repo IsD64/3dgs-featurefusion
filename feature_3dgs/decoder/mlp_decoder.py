@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from feature_3dgs.decoder import AbstractDecoder
+from feature_3dgs import AbstractDecoder
+
 
 class MLPDecoder(AbstractDecoder):
     def __init__(self, feature_out_dim: int):

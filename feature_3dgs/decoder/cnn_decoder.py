@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from feature_3dgs.decoder import AbstractDecoder
+from feature_3dgs import AbstractDecoder
+
 
 class CNNDecoder(AbstractDecoder):
     def __init__(self, input_dim, output_dim):
