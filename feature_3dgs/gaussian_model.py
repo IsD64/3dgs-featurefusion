@@ -1,9 +1,32 @@
+from abc import ABC, abstractmethod
+import math
 import torch
 import torch.nn as nn
-import math
 from gaussian_splatting import GaussianModel, Camera
 from feature_3dgs.diff_gaussian_rasterization import GaussianRasterizationSettings, GaussianRasterizer
-from feature_3dgs.decoder import AbstractDecoder
+
+
+class AbstractDecoder(ABC):
+
+    @abstractmethod
+    def __call__(self, feature_map: torch.Tensor) -> torch.Tensor:
+        pass
+
+    @abstractmethod
+    def to(self, device) -> 'AbstractDecoder':
+        return self
+
+    @abstractmethod
+    def load(self, path: str) -> None:
+        pass
+
+    @abstractmethod
+    def save(self, path: str) -> None:
+        pass
+
+    @abstractmethod
+    def parameters(self):
+        return []
 
 
 class FeatureGaussianModel(GaussianModel):
